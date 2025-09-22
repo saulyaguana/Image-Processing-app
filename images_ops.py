@@ -19,6 +19,12 @@ class ImageOps:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
     
+    def validate_video(self, path):
+        video = cv2.VideoCapture(path)
+        if not video.isOpened():
+            raise OpError("Please check the correct path again.")
+        return video
+    
     def validate_password(self, password):
         if self.password != password:
             raise OpError("Please enter the correct password.")
@@ -91,6 +97,33 @@ class ImageOps:
         
         plt.show()
         
+    def binary_global_threshold(self, path, max_value=255):
+        video  = self.validate_video(path)
+        win_name = "Binary Global Threshold"
+        cv2.namedWindow(win_name)
+        
+        while True:
+            has_frame, frame = video.read()
+            
+            if not has_frame:
+                break
+            
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            _, binary_frame = cv2.threshold(gray_frame, 120, max_value, cv2.THRESH_BINARY)
+            
+            cv2.imshow(win_name, binary_frame)
+            
+            key = cv2.waitKey(1)
+            
+            if key == ord("q") or key == ord("Q") or key == 27:
+                break
+            
+        video.release()
+        cv2.destroyAllWindows()
+        
+        
+        
+        
     def color_histogram(self, path):
         image = self.validate_image(path)
         
@@ -110,11 +143,6 @@ class ImageOps:
         
         plt.show()
     
-    def validate_video(self, path):
-        video = cv2.VideoCapture(path)
-        if not video.isOpened():
-            raise OpError("Please check the correct path again.")
-        return video
     
     def motion_detection(self, history, path=0, kernel_size=(5, 5)):
         knn = cv2.createBackgroundSubtractorKNN(history=history)

@@ -64,6 +64,8 @@ To detect edges with bilateral Canny, press bi_canny""")
             calculator.rgb_segmented()
         elif action == "bi_canny":
             calculator.bilateral_canny()
+        elif action == "thresh_frame":
+            calculator.binary_global_threshold()
         else:
             print("Invalid choice. Please try again.")
     except OpError as e:

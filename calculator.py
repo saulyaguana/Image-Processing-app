@@ -135,3 +135,11 @@ class Calculator:
         
         path = int(input("The device you want use: "))
         account.bilateral_canny(path)
+        
+    def binary_global_threshold(self):
+        print("*** Binary Global Threshold ***")
+        
+        path = int(input("Enter the path of the device: "))
+        
+        obj = self.accounts_dict[0]
+        obj.binary_global_threshold(path)
