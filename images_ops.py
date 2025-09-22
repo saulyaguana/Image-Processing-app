@@ -8,9 +8,8 @@ class OpError(Exception):
     pass
 
 class ImageOps:
-    def __init__(self, name, password):
-        self.name = name
-        self.password = password
+    def __init__(self):
+        pass
         
     def validate_image(self, path):
         image = cv2.imread(path, cv2.IMREAD_COLOR)
@@ -19,9 +18,9 @@ class ImageOps:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
     
-    def validate_password(self, password):
-        if self.password != password:
-            raise OpError("Please enter the correct password.")
+    # def validate_password(self, password):
+    #     if self.password != password:
+    #         raise OpError("Please enter the correct password.")
             
         
     def split_image(self, path):
