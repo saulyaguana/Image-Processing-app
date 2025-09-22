@@ -32,7 +32,9 @@ To detect edges (with Canny), press canny
 
 To detect RGB in a segmented video, press seg_rgb
 
-To detect edges with bilateral Canny, press bi_canny""")
+To detect edges with bilateral Canny, press bi_canny
+
+To binary a frame with global thresholding, press thresh_frame""")
 
     print()
     

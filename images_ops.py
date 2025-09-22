@@ -18,6 +18,12 @@ class ImageOps:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
     
+    def validate_video(self, path):
+        video = cv2.VideoCapture(path)
+        if not video.isOpened():
+            raise OpError("Please check the correct path again.")
+        return video
+    
     # def validate_password(self, password):
     #     if self.password != password:
     #         raise OpError("Please enter the correct password.")
@@ -113,8 +119,6 @@ class ImageOps:
             
         video.release()
         cv2.destroyAllWindows()
-        
-        
         
         
     def color_histogram(self, path):
