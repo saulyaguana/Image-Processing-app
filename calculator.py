@@ -140,6 +140,6 @@ class Calculator:
         print("*** Binary Global Threshold ***")
         
         path = int(input("Enter the path of the device: "))
+        obj = self.img_object
         
-        obj = self.accounts_dict[0]
         obj.binary_global_threshold(path)
