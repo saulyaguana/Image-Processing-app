@@ -460,3 +460,70 @@ class ImageOps:
             
         video.release()
         cv2.destroyAllWindows()
+        
+    def detect_faces(
+        self,
+        path_proto,
+        path_model,
+        device,
+        scale=1.0,
+        mean=[104, 117, 123],
+        width=300,
+        height=300,
+    ):
+        net = self.validate_pre_trained_model(path_proto, path_model)
+        
+        win_name = "Face detector"
+        cv2.namedWindow(win_name)
+        
+        video = self.validate_video(device)
+        
+        w = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        while True:
+            has_frame, frame = video.read()
+            
+            if not has_frame:
+                break
+            
+            # Convert the image to blob
+            blob = cv2.dnn.blobFromImage(
+                frame,
+                scalefactor=scale,
+                size=(width, height),
+                mean=mean,
+                swapRB=False,
+                crop=False,
+            )
+            
+            # Pass the blob to the DNN model
+            net.setInput(blob)
+            detections = net.forward()
+            
+            for i in range(detections.shape[2]):
+                confidence = detections[0, 0, i, 2]
+                if confidence > 0.5:
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    (x1, y1, x2, y2) = box.astype("int")
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    label = "Confidence: %.4f" % confidence
+                    label_size , base_line = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX, 0.5, 1)
+                    cv2.rectangle(
+                        frame,
+                        (x1, y1 - label_size[1]),
+                        (x1 + label_size[0], y1 + base_line),
+                        (255, 255, 255),
+                        cv2.FILLED,
+                    )
+                    
+                    cv2.putText(frame, label, (x1, y1), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0))
+                    
+            cv2.imshow(win_name, frame)
+            
+            key = cv2.waitKey(1)
+            
+            if key == 27:
+                break
+        video.release()
+        cv2.destroyAllWindows()
