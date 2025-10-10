@@ -27,7 +27,7 @@ class ImageOps:
     def validate_pre_trained_model(self, path_proto, path_model):
         if not os.path.exists(path_proto):
             raise OpError("Prototxt file not found, check the path again")
-        if not os.path.exist(path_model):
+        if not os.path.exists(path_model):
             raise OpError("Model not found, check the path again")
         
         try:

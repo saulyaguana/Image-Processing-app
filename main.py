@@ -34,7 +34,11 @@ To detect RGB in a segmented video, press seg_rgb
 
 To detect edges with bilateral Canny, press bi_canny
 
-To binary a frame with global thresholding, press thresh_frame""")
+To binary a frame with global thresholding, press thresh_frame
+
+To detect faces, type detect_faces
+
+To exit, type break""")
 
     print()
     
@@ -68,6 +72,10 @@ To binary a frame with global thresholding, press thresh_frame""")
             calculator.bilateral_canny()
         elif action == "thresh_frame":
             calculator.binary_global_threshold()
+        elif action == "detect_faces":
+            calculator.detect_faces()
+        elif action == "break":
+            break
         else:
             print("Invalid choice. Please try again.")
     except OpError as e:
