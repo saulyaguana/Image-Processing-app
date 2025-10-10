@@ -24,6 +24,25 @@ class ImageOps:
             raise OpError("Please check the correct path again.")
         return video
     
+    def validate_pre_trained_model(self, path_proto, path_model):
+        if not os.path.exists(path_proto):
+            raise OpError("Prototxt file not found, check the path again")
+        if not os.path.exist(path_model):
+            raise OpError("Model not found, check the path again")
+        
+        try:
+            net = cv2.dnn.readNetFromCaffe(path_proto, path_model)
+        except cv2.error as e:
+            raise OpError(f"Failed to load model. OpenCV error - {e}")
+        except Exception as e:
+            raise OpError("Unexpected error while loading model")
+        
+        if net.empty():
+            raise OpError("Loaded model, but it is empty")
+        
+        return net
+        
+    
     # def validate_password(self, password):
     #     if self.password != password:
     #         raise OpError("Please enter the correct password.")
