@@ -102,3 +102,11 @@ class Calculator:
         obj = self.img_object
         
         obj.binary_global_threshold(path)
+        
+    def detect_faces(self):
+        print("*** Detect Faces ***")
+        
+        path = int(input("Enter the path of the device: "))
+        
+        obj = self.img_object
+        obj.detect_faces(path)

@@ -463,9 +463,9 @@ class ImageOps:
         
     def detect_faces(
         self,
-        path_proto,
-        path_model,
         device,
+        path_proto="./models/deploy.prototxt",
+        path_model="./models/res10_300x300_ssd_iter_140000.caffemodel",
         scale=1.0,
         mean=[104, 117, 123],
         width=300,
