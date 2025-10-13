@@ -110,3 +110,12 @@ class Calculator:
         
         obj = self.img_object
         obj.detect_faces(path)
+        
+    def blur_faces(self):
+        print("*** Blur Faces ***")
+        
+        # There will be more versions for blurring faces
+        path = int(input("Enter the path of the device: "))
+        
+        obj = self.img_object
+        obj.blur_faces(path)

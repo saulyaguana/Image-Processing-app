@@ -527,3 +527,64 @@ class ImageOps:
                 break
         video.release()
         cv2.destroyAllWindows()
+        
+    def blur_faces(
+        self,
+        device,
+        path_proto="./models/deploy.prototxt",
+        path_model="./models/res10_300x300_ssd_iter_140000.caffemodel",
+        scale=0.1,
+        mean=[104, 117, 123],
+        width=300,
+        height=300
+    ):
+        
+        net = cv2.dnn.readNetFromCaffe(path_proto, path_model)
+        
+        video = self.validate_video(device)
+        
+        w = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        win_name = "Blur Faces"
+        cv2.namedWindow(win_name)
+        
+        while True:
+            has_frame, frame = video.read()
+            
+            if not has_frame:
+                break
+            
+            blob = cv2.dnn.blobFromImage(
+                frame,
+                scalefactor=scale,
+                size=(width, height),
+                mean=mean,
+                swapRB=False,
+                crop=False,
+            )
+            
+            net.setInput(blob)
+            detections = net.forward()
+            
+            # This is the first version of blurring faces
+            # There will be more versions later in this method
+            for i in range(detections.shape[2]):
+                confidence = detections[0, 0, i, 2]
+                if confidence > 0.5:
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    x1, y1, x2, y2 = box.astype("int")
+                    
+                    face = frame[y1:y2, x1:x2]
+                    face = cv2.GaussianBlur(face, (11, 11), 5, 5)
+                    frame[y1:y2, x1:x2] = face
+                    
+            cv2.imshow(win_name, frame)
+            
+            key = cv2.waitKey(1)
+            
+            if key == 27:
+                break
+            
+        video.release()
+        cv2.destroyAllWindows()

@@ -38,6 +38,8 @@ To binary a frame with global thresholding, press thresh_frame
 
 To detect faces, type detect_faces
 
+To blur faces, type blur_faces
+
 To exit, type break""")
 
     print()
@@ -74,6 +76,8 @@ To exit, type break""")
             calculator.binary_global_threshold()
         elif action == "detect_faces":
             calculator.detect_faces()
+        elif action == "blur_faces":
+            calculator.blur_faces()
         elif action == "break":
             break
         else:
