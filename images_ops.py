@@ -588,3 +588,70 @@ class ImageOps:
             
         video.release()
         cv2.destroyAllWindows()
+        
+    def landmark_faces(
+        self,
+        path,
+        path_proto="./models/deploy.prototxt",
+        path_model="./models/res10_300x300_ssd_iter_140000.caffemodel",
+        yaml_model="./models/lbfmodel.yaml",
+        scale=1.0,
+        mean=[104, 117, 123],
+        width=300,
+        height=300
+    ):
+        video = self.validate_video(path)
+        win_name = "Landmark face detection"
+        cv2.namedWindow(win_name)
+        
+        w = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        net = cv2.dnn.readNetFromCaffe(path_proto, path_model)
+        landmark_detection = cv2.face.createFacemarkLBF()
+        landmark_detection.loadModel(yaml_model)
+        
+        while True:
+            has_frame, frame = video.read()
+            
+            if not has_frame:
+                break
+            
+            blob = cv2.dnn.blobFromImage(
+                frame,
+                scalefactor=scale,
+                size=(width, height),
+                mean=mean,
+                swapRB=False,
+                crop=False,
+            )
+            
+            net.setInput(blob)
+            
+            detections = net.forward()
+            
+            for detection in detections[0][0]:
+                if detection[2] > 0.7:
+                    left = detection[3] * w
+                    top = detection[4] * h
+                    right = detection[5] * w
+                    bottom = detection[6] * h
+                    
+                    face_width = right - left
+                    face_height = bottom - top
+                    
+                    face_roi = np.array([(left, top, face_width, face_height)]).astype(int)
+                    
+                    _, landmarks_list = landmark_detection.fit(frame, face_roi)
+                    
+                    for land_m in landmarks_list:
+                        cv2.face.drawnFacemarks(frame, land_m, (0, 255, 0))
+                        
+            cv2.imshow(win_name, frame)
+            key = cv2.waitKey(1)
+            
+            if key == 27:
+                break
+            
+        video.release()
+        cv2.destroyAllWindows()

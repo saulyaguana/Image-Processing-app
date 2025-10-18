@@ -119,3 +119,11 @@ class Calculator:
         
         obj = self.img_object
         obj.blur_faces(path)
+        
+    def landmark_faces(self):
+        print("*** Landmark Faces ***")
+        
+        path = int(input("Enter the path of the device: "))
+        
+        obj = self.img_object
+        obj.landmark_faces(path)
