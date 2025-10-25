@@ -10,3 +10,4 @@ This is a list of the top applications using OpenCV and some pre-trained models 
 6. RGB detection under color segmentation
 7. Canny Edge Detection with Bilateral Filter
 8. Detecting Faces with pre trained models from Caffe
+9. Landmark face detection with pre trainied models from Caffe

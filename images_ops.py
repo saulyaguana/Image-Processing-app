@@ -645,7 +645,7 @@ class ImageOps:
                     _, landmarks_list = landmark_detection.fit(frame, face_roi)
                     
                     for land_m in landmarks_list:
-                        cv2.face.drawnFacemarks(frame, land_m, (0, 255, 0))
+                        cv2.face.drawFacemarks(frame, land_m, (0, 255, 0))
                         
             cv2.imshow(win_name, frame)
             key = cv2.waitKey(1)
