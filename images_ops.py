@@ -655,3 +655,78 @@ class ImageOps:
             
         video.release()
         cv2.destroyAllWindows()
+    
+    def detect_coco_dataset(
+        self,
+        device,
+        path_model="./models/ssd_mobilenet_frozen_inference_graph.pb",
+        config_file="./models/ssd_mobilenet_v2_coco_2018_03_29.pbtxt",
+        class_file="./models/coco_class_labels.txt",
+        scale=1.0,
+        mean=[0, 0, 0],
+        dim = 300,
+    ):
+        video = self.validate_video(device)
+        win_name = "COCO Dataset Object Detection"
+        cv2.namedWindow(win_name)
+        w = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        net = cv2.dnn.readNetFromTensorflow(path_model, config_file)
+        
+        with open(class_file, "r") as f:
+            labels = f.read().split("\n")
+            
+        def draw_text(img, text, x, y):
+            font_face = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.7
+            thickness = 1
+            
+            text_size = cv2.getTextSize(text, font_face, font_scale, thickness)
+            dim = text_size[0]
+            baseline = text_size[1]
+            
+            cv2.rectangle(img, (x, y), (x + dim[0], y + dim[1] + baseline), (0, 0, 0), cv2.FILLED);
+            cv2.putText(img, text, (x, y + dim[1]), font_face, font_scale, (0, 255, 255), thickness, cv2.LINE_AA)
+            
+        while True:
+            has_frame, frame = video.read()
+            if has_frame != True:
+                break
+            
+            frame = cv2.add(frame, np.ones(frame.shape, dtype="uint8") * 12)
+            frame = np.uint8(
+                np.clip(
+                    cv2.multiply(np.float64(frame), np.ones(frame.shape, dtype="float64") * 1.2),
+                    0, 255
+                )
+            )
+            blob = cv2.dnn.blobFromImage(
+                frame,
+                scale,
+                (dim, dim),
+                mean,
+                True,
+            )
+            net.setInput(blob)
+            objects = net.forward()
+            
+            for i in range(objects.shape[2]):
+                class_id = int(objects[0, 0, i, 1])
+                score = float(objects[0, 0, i, 2])
+                
+                # Normalized coordinates
+                x = int(objects[0, 0, i, 3] * w)
+                y = int(objects[0, 0, i, 4] * h)
+                x2 = int(objects[0, 0, i, 5] * w - x)
+                y2 = int(objects[0, 0, i, 6] * h - y)
+                
+                if score > 0.8:
+                    draw_text(frame, "{}".format(labels[class_id]), x, y)
+                    cv2.rectangle(frame, (x, y), (x + x2, y + y2), (255, 255, 255), 2)
+                    
+            cv2.imshow(win_name, frame)
+            key = cv2.waitKey(1)
+            if key == ord("q") or key == ord("Q") or key == 27:
+                break
+        video.release()
+        cv2.destroyAllWindows()

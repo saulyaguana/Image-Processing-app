@@ -127,3 +127,11 @@ class Calculator:
         
         obj = self.img_object
         obj.landmark_faces(path)
+        
+    def detect_coco_dataset(self):
+        print("*** Detect COCO Dataset Objects ***")
+        
+        path = int(input("Enter the path of the device: "))
+        
+        obj = self.img_object
+        obj.detect_coco_dataset(path)

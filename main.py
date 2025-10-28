@@ -42,6 +42,8 @@ To blur faces, type blur_faces
 
 To landmark faces, press land_faces
 
+To use the COCO dataset to detect objects, type detect_coco
+
 To exit, type break""")
 
     print()
@@ -82,6 +84,8 @@ To exit, type break""")
             calculator.blur_faces()
         elif action == "land_faces":
             calculator.landmark_faces()
+        elif action == "detect_coco":
+            calculator.detect_coco_dataset()
         elif action == "break":
             break
         else:
