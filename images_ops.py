@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+import pyautogui as gui
 import matplotlib.pyplot as plt
 plt.rcParams["image.cmap"] = "gray"
 
@@ -724,6 +725,108 @@ class ImageOps:
                     draw_text(frame, "{}".format(labels[class_id]), x, y)
                     cv2.rectangle(frame, (x, y), (x + x2, y + y2), (255, 255, 255), 2)
                     
+            cv2.imshow(win_name, frame)
+            key = cv2.waitKey(1)
+            if key == ord("q") or key == ord("Q") or key == 27:
+                break
+        video.release()
+        cv2.destroyAllWindows()
+        
+    def web_game(
+        self,
+        device,
+        path_proto="./models/deploy.prototxt",
+        path_model="./models/res10_300x300_ssd_iter_140000.caffemodel",
+        scale=1.0,
+        mean=[104, 117, 123],
+        width=300,
+        height=300,
+    ):
+        video = self.validate_video(device)
+        win_name = "HCI Web Game"
+        cv2.namedWindow(win_name)
+        w = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        net = cv2.dnn.readNetFromCaffe(path_proto, path_model)
+        count = 0
+        init = 0
+        last_mov = ""
+        # detected_faces = []
+        
+        left_x = w // 2 - 130
+        top_y = h // 2 - 180
+        right_x = w // 2 + 130
+        bottom_y = h // 2 + 150
+        
+        def move(x1, y1, x2, y2):
+            nonlocal last_mov            
+                    
+            if x1 > left_x and y1 > top_y and x2 < right_x and y2 < bottom_y:
+                last_mov = "center"
+            if last_mov == "center":
+                if x1 < left_x:
+                    gui.press("left")
+                    last_mov = "left"
+                elif x2 > right_x:
+                    gui.press("right")
+                    last_mov = "right"
+                if y2 > bottom_y:
+                    gui.press("down")
+                    last_mov = "down"
+                elif y1 < top_y:
+                    gui.press("up")
+                    last_mov = "up"
+        
+        while True:
+            has_frame, frame = video.read()
+            
+            if has_frame != True:
+                break
+            
+            frame = cv2.flip(frame, 1)
+            
+            cv2.rectangle(frame, (left_x, top_y), (right_x, bottom_y), (0, 0, 255), 2)
+            
+            blob = cv2.dnn.blobFromImage(
+                frame,
+                scale,
+                size=(width, height),
+                mean=mean,
+                swapRB=False,
+                crop=False,
+            )
+            net.setInput(blob)
+            detections = net.forward()
+            
+            for i in range(detections.shape[2]):
+                confidence = detections[0, 0, i, 2]
+                if confidence > 0.5:
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    start_x, start_y, end_x, end_y = box.astype("int")
+                    # detected_faces.append(
+                    #     {
+                    #         "start": (start_x, start_y),
+                    #         "end": (end_x, end_y),
+                    #         "confidence": confidence
+                    #     }
+                    # )
+                    
+                    # for face in detected_faces:
+                    #     cv2.rectangle(frame, face["start"], face["end"], (0, 255, 0), 2)
+                    cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
+                    
+                    if count % 2 == 0:
+                        if init == 0:
+                            init = 1
+                            cv2.putText(frame, "Game is runing", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                            cv2.waitKey(10)
+                            last_mov = "center"
+                            gui.click(x=500, y=500)
+                        else:
+                            move(start_x, start_y, end_x, end_y)
+                            cv2.waitKey(1)
+                        
+                
             cv2.imshow(win_name, frame)
             key = cv2.waitKey(1)
             if key == ord("q") or key == ord("Q") or key == 27:

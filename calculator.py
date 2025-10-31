@@ -135,3 +135,11 @@ class Calculator:
         
         obj = self.img_object
         obj.detect_coco_dataset(path)
+        
+    def web_game(self):
+        print("*** Web Game Control with Face Movements ***")
+        
+        path = int(input("Enter the path of the device: "))
+        
+        obj = self.img_object
+        obj.web_game(path)

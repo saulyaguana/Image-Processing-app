@@ -44,6 +44,8 @@ To landmark faces, press land_faces
 
 To use the COCO dataset to detect objects, type detect_coco
 
+To play a web game with your face movements, type web_game
+
 To exit, type break""")
 
     print()
@@ -86,6 +88,8 @@ To exit, type break""")
             calculator.landmark_faces()
         elif action == "detect_coco":
             calculator.detect_coco_dataset()
+        elif action == "web_game":
+            calculator.web_game()
         elif action == "break":
             break
         else:
