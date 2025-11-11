@@ -143,3 +143,11 @@ class Calculator:
         
         obj = self.img_object
         obj.web_game(path)
+
+    def human_pose_estimation(self):
+        print("*** Human Pose Estimation ***")
+
+        path = int(input("Enter the path of the device: "))
+
+        obj = self.img_object
+        obj.human_pose_estimation(path)

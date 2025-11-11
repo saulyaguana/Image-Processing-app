@@ -45,6 +45,8 @@ To landmark faces, press land_faces
 To use the COCO dataset to detect objects, type detect_coco
 
 To play a web game with your face movements, type web_game
+          
+To perform human pose estimation, press human_pose
 
 To exit, type break""")
 
@@ -90,6 +92,8 @@ To exit, type break""")
             calculator.detect_coco_dataset()
         elif action == "web_game":
             calculator.web_game()
+        elif action == "human_pose":
+            calculator.human_pose_estimation()
         elif action == "break":
             break
         else:

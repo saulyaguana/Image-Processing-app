@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 import pyautogui as gui
+import mediapipe as mp
 import matplotlib.pyplot as plt
 plt.rcParams["image.cmap"] = "gray"
 
@@ -831,5 +832,53 @@ class ImageOps:
             key = cv2.waitKey(1)
             if key == ord("q") or key == ord("Q") or key == 27:
                 break
+        video.release()
+        cv2.destroyAllWindows()
+
+    def human_pose_estimation(self, path):
+        video = self.validate_video(path)
+        win_name = "Human Pose Estimation"
+        cv2.namedWindow(win_name)
+        width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        mp_pose = mp.solutions.pose
+        mp_drawing = mp.solutions.drawing_utils
+
+        while True:
+            has_frame, frame = video.read()
+
+            if has_frame != True:
+                break
+
+            frame = cv2.flip(frame, 1)
+
+            with mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5) as pose:
+                results = pose.process(frame)
+
+                # Draw landmarks.
+                circle_radius = int(0.007 * height)
+
+                # Landmark drawing style.
+                point_spec = mp_drawing.DrawingSpec(color=(220, 100, 0), thickness=-1, circle_radius=circle_radius)
+
+                # Landmark connections style.
+                line_spec = mp_drawing.DrawingSpec(color=(255, 250, 0), thickness=2)
+
+                # Draw both: connections nad landmarks
+                mp_drawing.draw_landmarks(
+                    frame,
+                    landmark_list=results.pose_landmarks,
+                    connections=mp_pose.POSE_CONNECTIONS,
+                    landmark_drawing_spec=point_spec,
+                    connection_drawing_spec=line_spec
+                )
+
+            cv2.imshow(win_name, frame)
+            key = cv2.waitKey(1)
+
+            if key == 27:
+                break
+        
         video.release()
         cv2.destroyAllWindows()
