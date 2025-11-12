@@ -891,20 +891,24 @@ class ImageOps:
         mp_hands = mp.solutions.hands
         mp_drawing = mp.solutions.drawing_utils
 
-        while True:
-            has_frame, frame = video.read()
 
-            if has_frame != True:
-                break
+        with mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.5, max_num_hands=2) as hands:
+            circle_radius = int(0.005 * height)
+            point_spec = mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=-1, circle_radius=circle_radius)
+            line_spec = mp_drawing.DrawingSpec(color=(105, 177, 255), thickness=2)
 
-            frame = cv2.flip(frame, 1)
+            while True:
+                has_frame, frame = video.read()
 
-            with mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.2, max_num_hands=2) as hands:
+                if has_frame != True:
+                    break
+
+                frame = cv2.flip(frame, 1)
+
+                
                 results = hands.process(frame)
 
-                circle_radius = int(0.005 * height)
-                point_spec = mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=-1, circle_radius=circle_radius)
-                line_spec = mp_drawing.DrawingSpec(color=(105, 177, 255), thickness=2)
+                    
 
                 if results.multi_hand_landmarks:
                     for hand_landmark in results.multi_hand_landmarks:
@@ -916,11 +920,64 @@ class ImageOps:
                             connection_drawing_spec=line_spec
                         )
 
-            cv2.imshow(win_name, frame)
-            key = cv2.waitKey(1)
+                cv2.imshow(win_name, frame)
+                key = cv2.waitKey(1)
 
-            if key == 27:
-                break
+                if key == 27:
+                    break
 
+        video.release()
+        cv2.destroyAllWindows()
+
+    def mouse_hand_estimation(self, path):
+        video = self.validate_video(path)
+        win_name = "Mouse Hand Estimation"
+        cv2.namedWindow(win_name)
+        height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        screen_width, screen_height = gui.size()
+
+        mp_hands = mp.solutions.hands
+        mp_drawing = mp.solutions.drawing_utils
+
+        with mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.5, max_num_hands=1) as hands:
+            circle_radius = int(0.005 * height)
+            point_spec = mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=-1, circle_radius=circle_radius)
+            line_spec = mp_drawing.DrawingSpec(color=(255, 177, 105), thickness=2)
+
+            while True:
+                has_frame, frame = video.read()
+
+                if has_frame != True:
+                    break
+
+                frame = cv2.flip(frame, 1)
+
+                results = hands.process(frame)
+
+                if results.multi_hand_landmarks:
+                    for hand_landmark in results.multi_hand_landmarks:
+                        indice_x = int(hand_landmark.landmark[8].x * screen_width)
+                        indice_y = int(hand_landmark.landmark[8].y * screen_height)
+                        # thumb_x = int(hand_landmark.landmark[4].x * screen_width)
+                        # thumb_y = int(hand_landmark.landmark[4].y * screen_height)
+                        mp_drawing.draw_landmarks(
+                            frame,
+                            landmark_list=hand_landmark,
+                            connections=mp_hands.HAND_CONNECTIONS,
+                            landmark_drawing_spec=point_spec,
+                            connection_drawing_spec=line_spec
+                        )
+                        gui.moveTo(x=indice_x, y=indice_y, duration=0.1)
+
+                        # if indice_x == thumb_x and indice_y == thumb_y:
+                        #     gui.click(indice_x, indice_y, clicks=1, button="left", tween=gui.easeInOutQuad)
+
+                cv2.imshow(win_name, frame)
+
+                key = cv2.waitKey(1)
+
+                if key == 27:
+                    break
         video.release()
         cv2.destroyAllWindows()

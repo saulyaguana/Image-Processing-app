@@ -159,3 +159,11 @@ class Calculator:
 
         obj = self.img_object
         obj.hand_estimation(path)
+
+    def mouse_hand_estimation(self):
+        print("*** Mouse Hand Estimation ***")
+
+        path = int(input("Enter the path of the device: "))
+
+        obj = self.img_object
+        obj.mouse_hand_estimation(path)
