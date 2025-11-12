@@ -1,4 +1,5 @@
 import os
+import math
 import cv2
 import numpy as np
 import pyautogui as gui
@@ -959,8 +960,14 @@ class ImageOps:
                     for hand_landmark in results.multi_hand_landmarks:
                         indice_x = int(hand_landmark.landmark[8].x * screen_width)
                         indice_y = int(hand_landmark.landmark[8].y * screen_height)
-                        # thumb_x = int(hand_landmark.landmark[4].x * screen_width)
-                        # thumb_y = int(hand_landmark.landmark[4].y * screen_height)
+                        thumb_x = int(hand_landmark.landmark[4].x * screen_width)
+                        thumb_y = int(hand_landmark.landmark[4].y * screen_height)
+
+                        # Triangle length
+                        a = indice_x - thumb_x
+                        b = indice_y - thumb_y
+                        c = math.sqrt((a ** 2) + (b ** 2))
+
                         mp_drawing.draw_landmarks(
                             frame,
                             landmark_list=hand_landmark,
@@ -970,8 +977,10 @@ class ImageOps:
                         )
                         gui.moveTo(x=indice_x, y=indice_y, duration=0.1)
 
-                        # if indice_x == thumb_x and indice_y == thumb_y:
-                        #     gui.click(indice_x, indice_y, clicks=1, button="left", tween=gui.easeInOutQuad)
+                        if c < 80:
+                            gui.click(x=indice_x, y=indice_y, button="left", duration=0.1, clicks=2)
+
+                        
 
                 cv2.imshow(win_name, frame)
 
