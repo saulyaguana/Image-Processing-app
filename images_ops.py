@@ -839,7 +839,6 @@ class ImageOps:
         video = self.validate_video(path)
         win_name = "Human Pose Estimation"
         cv2.namedWindow(win_name)
-        width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         mp_pose = mp.solutions.pose
@@ -880,5 +879,48 @@ class ImageOps:
             if key == 27:
                 break
         
+        video.release()
+        cv2.destroyAllWindows()
+
+    def hand_estimation(self, path):
+        video = self.validate_video(path)
+        win_name = "Hand Estimation"
+        cv2.namedWindow(win_name)
+        height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        mp_hands = mp.solutions.hands
+        mp_drawing = mp.solutions.drawing_utils
+
+        while True:
+            has_frame, frame = video.read()
+
+            if has_frame != True:
+                break
+
+            frame = cv2.flip(frame, 1)
+
+            with mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.2, max_num_hands=2) as hands:
+                results = hands.process(frame)
+
+                circle_radius = int(0.005 * height)
+                point_spec = mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=-1, circle_radius=circle_radius)
+                line_spec = mp_drawing.DrawingSpec(color=(105, 177, 255), thickness=2)
+
+                if results.multi_hand_landmarks:
+                    for hand_landmark in results.multi_hand_landmarks:
+                        mp_drawing.draw_landmarks(
+                            frame,
+                            landmark_list=hand_landmark,
+                            connections=mp_hands.HAND_CONNECTIONS,
+                            landmark_drawing_spec=point_spec,
+                            connection_drawing_spec=line_spec
+                        )
+
+            cv2.imshow(win_name, frame)
+            key = cv2.waitKey(1)
+
+            if key == 27:
+                break
+
         video.release()
         cv2.destroyAllWindows()

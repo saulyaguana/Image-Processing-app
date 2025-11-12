@@ -151,3 +151,11 @@ class Calculator:
 
         obj = self.img_object
         obj.human_pose_estimation(path)
+
+    def hand_estimation(self):
+        print("** Hand Estimation ***")
+
+        path = int(input("Enter the path of the device: "))
+
+        obj = self.img_object
+        obj.hand_estimation(path)

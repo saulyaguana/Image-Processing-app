@@ -47,6 +47,8 @@ To use the COCO dataset to detect objects, type detect_coco
 To play a web game with your face movements, type web_game
           
 To perform human pose estimation, press human_pose
+          
+To perform hand estimation, press hand_estimation
 
 To exit, type break""")
 
@@ -94,6 +96,8 @@ To exit, type break""")
             calculator.web_game()
         elif action == "human_pose":
             calculator.human_pose_estimation()
+        elif action == "hand_estimation":
+            calculator.hand_estimation()
         elif action == "break":
             break
         else:
