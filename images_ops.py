@@ -845,25 +845,28 @@ class ImageOps:
         mp_pose = mp.solutions.pose
         mp_drawing = mp.solutions.drawing_utils
 
-        while True:
-            has_frame, frame = video.read()
+        with mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5) as pose:
+            # Draw landmarks.
+            circle_radius = int(0.007 * height)
 
-            if has_frame != True:
-                break
+            # Landmark drawing style.
+            point_spec = mp_drawing.DrawingSpec(color=(220, 100, 0), thickness=-1, circle_radius=circle_radius)
 
-            frame = cv2.flip(frame, 1)
+            # Landmark connections style.
+            line_spec = mp_drawing.DrawingSpec(color=(255, 250, 0), thickness=2)
 
-            with mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5) as pose:
+            while True:
+                has_frame, frame = video.read()
+
+                if has_frame != True:
+                    break
+
+                frame = cv2.flip(frame, 1)
+
+                
                 results = pose.process(frame)
 
-                # Draw landmarks.
-                circle_radius = int(0.007 * height)
-
-                # Landmark drawing style.
-                point_spec = mp_drawing.DrawingSpec(color=(220, 100, 0), thickness=-1, circle_radius=circle_radius)
-
-                # Landmark connections style.
-                line_spec = mp_drawing.DrawingSpec(color=(255, 250, 0), thickness=2)
+                    
 
                 # Draw both: connections nad landmarks
                 mp_drawing.draw_landmarks(
@@ -874,11 +877,11 @@ class ImageOps:
                     connection_drawing_spec=line_spec
                 )
 
-            cv2.imshow(win_name, frame)
-            key = cv2.waitKey(1)
+                cv2.imshow(win_name, frame)
+                key = cv2.waitKey(1)
 
-            if key == 27:
-                break
+                if key == 27:
+                    break
         
         video.release()
         cv2.destroyAllWindows()
