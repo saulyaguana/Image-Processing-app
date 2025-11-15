@@ -45,12 +45,6 @@ class ImageOps:
         
         return net
         
-    
-    # def validate_password(self, password):
-    #     if self.password != password:
-    #         raise OpError("Please enter the correct password.")
-            
-        
     def split_image(self, path):
         image = self.validate_image(path)
         r, g, b = cv2.split(image)
@@ -828,7 +822,6 @@ class ImageOps:
                             move(start_x, start_y, end_x, end_y)
                             cv2.waitKey(1)
                         
-                
             cv2.imshow(win_name, frame)
             key = cv2.waitKey(1)
             if key == ord("q") or key == ord("Q") or key == 27:
@@ -862,11 +855,8 @@ class ImageOps:
                     break
 
                 frame = cv2.flip(frame, 1)
-
                 
                 results = pose.process(frame)
-
-                    
 
                 # Draw both: connections nad landmarks
                 mp_drawing.draw_landmarks(
@@ -908,11 +898,8 @@ class ImageOps:
                     break
 
                 frame = cv2.flip(frame, 1)
-
                 
-                results = hands.process(frame)
-
-                    
+                results = hands.process(frame) 
 
                 if results.multi_hand_landmarks:
                     for hand_landmark in results.multi_hand_landmarks:
@@ -982,8 +969,6 @@ class ImageOps:
 
                         if c < 80:
                             gui.click(x=indice_x, y=indice_y, button="left", duration=0.1, clicks=2)
-
-                        
 
                 cv2.imshow(win_name, frame)
 
