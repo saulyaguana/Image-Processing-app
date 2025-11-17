@@ -920,18 +920,22 @@ class ImageOps:
         video.release()
         cv2.destroyAllWindows()
 
-    def mouse_hand_estimation(self, path):
+    def mouse_hand_estimation(self, path, threshold=50):
         video = self.validate_video(path)
         win_name = "Mouse Hand Estimation"
-        cv2.namedWindow(win_name)
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(win_name, 1000, 800)
         height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         screen_width, screen_height = gui.size()
 
+        left_click_is_down = False
+        right_click_is_down = False
+
         mp_hands = mp.solutions.hands
         mp_drawing = mp.solutions.drawing_utils
 
-        with mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.5, max_num_hands=1) as hands:
+        with mp_hands.Hands(static_image_mode=False, min_detection_confidence=0.5, max_num_hands=2) as hands:
             circle_radius = int(0.005 * height)
             point_spec = mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=-1, circle_radius=circle_radius)
             line_spec = mp_drawing.DrawingSpec(color=(255, 177, 105), thickness=2)
@@ -947,16 +951,25 @@ class ImageOps:
                 results = hands.process(frame)
 
                 if results.multi_hand_landmarks:
-                    for hand_landmark in results.multi_hand_landmarks:
-                        indice_x = int(hand_landmark.landmark[8].x * screen_width)
-                        indice_y = int(hand_landmark.landmark[8].y * screen_height)
+                    for hand_landmark, handeness_result in zip(results.multi_hand_landmarks, results.multi_handedness):
+                        identified_hands = handeness_result.classification[0].label
+
+                        index_x = int(hand_landmark.landmark[8].x * screen_width)
+                        index_y = int(hand_landmark.landmark[8].y * screen_height)
+                        medium_x = int(hand_landmark.landmark[12].x * screen_width)
+                        medium_y = int(hand_landmark.landmark[12].y * screen_height)
                         thumb_x = int(hand_landmark.landmark[4].x * screen_width)
                         thumb_y = int(hand_landmark.landmark[4].y * screen_height)
 
-                        # Triangle length
-                        a = indice_x - thumb_x
-                        b = indice_y - thumb_y
-                        c = math.sqrt((a ** 2) + (b ** 2))
+                        # Triangle length - thumb & index
+                        thumb_index_a = index_x - thumb_x
+                        thumb_index_b = thumb_y - index_y
+                        thumb_index_distance = int(math.sqrt((thumb_index_a ** 2) + (thumb_index_b ** 2)))
+
+                        # Triangle length - thumb & medium
+                        thumb_medium_a = medium_x - thumb_x
+                        thumb_medium_b = thumb_y - medium_y
+                        thumb_medium_distance = int(math.sqrt((thumb_medium_a ** 2) + (thumb_medium_b ** 2)))
 
                         mp_drawing.draw_landmarks(
                             frame,
@@ -965,10 +978,26 @@ class ImageOps:
                             landmark_drawing_spec=point_spec,
                             connection_drawing_spec=line_spec
                         )
-                        gui.moveTo(x=indice_x, y=indice_y, duration=0.1)
+                        
+                        if identified_hands == "Left":
+                            gui.moveTo(x=index_x, y=index_y, duration=0.1)
+                        
+                        if identified_hands == "Right":
+                            if thumb_index_distance < threshold:
+                                if not left_click_is_down:
+                                    gui.mouseDown(button="left")
+                                    left_click_is_down = True
+                            elif left_click_is_down:
+                                gui.mouseUp(button="left")
+                                left_click_is_down = False
 
-                        if c < 80:
-                            gui.click(x=indice_x, y=indice_y, button="left", duration=0.1, clicks=2)
+                            if thumb_medium_distance < threshold:
+                                if not right_click_is_down:
+                                    gui.mouseDown(button="right")
+                                    right_click_is_down = True
+                                elif right_click_is_down:
+                                    gui.mouseUp(button="right")
+                                    right_click_is_down = False
 
                 cv2.imshow(win_name, frame)
 
