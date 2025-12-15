@@ -51,6 +51,8 @@ To perform human pose estimation, press human_pose
 To perform hand estimation, press hand_estimation
           
 To take control of the mouse with your hands, type mouse_hand
+          
+To detect text, type text
 
 To exit, type break""")
 
@@ -102,6 +104,8 @@ To exit, type break""")
             calculator.hand_estimation()
         elif action == "mouse_hand":
             calculator.mouse_hand_estimation()
+        elif action == "text":
+            calculator.detect_text()
         elif action == "break":
             break
         else:

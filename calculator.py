@@ -167,3 +167,11 @@ class Calculator:
 
         obj = self.img_object
         obj.mouse_hand_estimation(path)
+
+    def detect_text(self):
+        print("*** Detect Text ***")
+
+        path = int(input("Enter the path of the device: "))
+
+        obj = self.img_object
+        obj.detect_text(path)

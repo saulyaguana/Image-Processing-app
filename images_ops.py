@@ -1007,3 +1007,44 @@ class ImageOps:
                     break
         video.release()
         cv2.destroyAllWindows()
+
+    def detect_text(
+            self,
+            path,
+            model_path="./models/DB_TD500_resnet50.onnx",
+            input_size=(320, 320),
+            bin_thresh = 0.3,
+            poly_thresh=0.5,
+            mean = (122.67891434, 116.66876762, 104.00698793)
+    ):
+        # Here I am using the DB50 model
+
+        video = self.validate_video(path)
+        win_name = "Text Detector"
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(win_name, 900, 700)
+        cv2.namedWindow(win_name)
+
+        textDetectorDB50 = cv2.dnn_TextDetectionModel_DB(model_path)
+        textDetectorDB50.setBinaryThreshold(bin_thresh).setPolygonThreshold(poly_thresh)
+        textDetectorDB50.setInputParams(1.0/255, input_size, mean, True)
+
+        while True:
+            has_frame, frame = video.read()
+
+            if has_frame != True:
+                break
+
+            boxesDB50, _ = textDetectorDB50.detect(frame)
+
+            cv2.polylines(frame, boxesDB50, True, (0, 255, 0), 3)
+
+            cv2.imshow(win_name, frame)
+
+            key = cv2.waitKey(1)
+
+            if key == 27:
+                break
+
+        video.release()
+        cv2.destroyAllWindows()
