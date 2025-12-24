@@ -175,3 +175,11 @@ class Calculator:
 
         obj = self.img_object
         obj.detect_text(path)
+
+    def recognize_text(self):
+        print("*** Recognize Text ***")
+
+        path = int(input("Enter the path of the device: "))
+
+        obj = self.img_object
+        obj.recognize_text(path)

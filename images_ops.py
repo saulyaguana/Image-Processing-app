@@ -1048,3 +1048,93 @@ class ImageOps:
 
         video.release()
         cv2.destroyAllWindows()
+
+    def recognize_text(self, path):
+        video = self.validate_video(path)
+
+        vocabulary = []
+
+        with open("./models/alphabet_94.txt") as f:
+            for l in f:
+                vocabulary.append(l.strip())
+            f.close()
+
+        text_detector = cv2.dnn_TextDetectionModel_DB("./models/DB_TD500_resnet50.onnx")
+
+        input_size = (320, 320)
+
+        bin_thresh = 0.3
+        poly_thresh = 0.5
+
+        mean = (122.67891434, 116.66876762, 104.00698793)
+
+        text_detector.setBinaryThreshold(bin_thresh).setPolygonThreshold(poly_thresh)
+        text_detector.setInputParams(1.0/255, input_size, mean, True)
+
+        # Text Recognizer
+        text_recognizer = cv2.dnn_TextRecognitionModel("./models/crnn_cs.onnx")
+        text_recognizer.setDecodeType("CTC-greedy")
+        text_recognizer.setVocabulary(vocabulary)
+        text_recognizer.setInputParams(1/127.5, (100,32), (127.5, 127.5, 127.5), True)
+
+        named_window = "Frame"
+        canva_window = "Canva"
+
+        cv2.namedWindow(named_window, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(named_window, 900, 700)
+
+        cv2.namedWindow(canva_window, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(canva_window, 900, 700)
+
+        cv2.namedWindow(named_window)
+        cv2.namedWindow(canva_window)
+
+
+        def fourPointsTransform(frame, vertices):
+            """Extracts and transforms roi of frame defined by vertices into a rectangle."""
+            # Get vertices of each bounding box 
+            vertices = np.asarray(vertices).astype(np.float32)
+            outputSize = (100, 32)
+            targetVertices = np.array([
+                [0, outputSize[1] - 1],
+                [0, 0],
+                [outputSize[0] - 1, 0],
+                [outputSize[0] - 1, outputSize[1] - 1]], dtype="float32")
+            # Apply perspective transform
+            rotationMatrix = cv2.getPerspectiveTransform(vertices, targetVertices)
+            result = cv2.warpPerspective(frame, rotationMatrix, outputSize)
+            return result
+
+        while True:
+            has_frame, frame = video.read()
+
+            if not has_frame:
+                break
+
+            boxes, _ = text_detector.detect(frame)
+
+            if boxes is not None:
+                cv2.polylines(frame, boxes, True, (255, 0, 255), 4)
+
+                output_canvas = np.full(frame.shape[:3], 255, dtype=np.uint8)
+
+                for box in boxes:
+                    cropped_roi = fourPointsTransform(frame, box)
+
+                    rec_result = text_recognizer.recognize(cropped_roi)
+
+                    box_height = int((abs((box[0, 1] - box[1, 1]))))
+
+                    font_scale = cv2.getFontScaleFromHeight(cv2.FONT_HERSHEY_SIMPLEX, box_height - 30, 1)
+                    placement = (int(box[0, 0]), int(box[0, 1]))
+                    cv2.putText(output_canvas, rec_result, placement, cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 0, 0), 1, 5)
+
+            cv2.imshow(named_window, frame)
+            cv2.imshow(canva_window, output_canvas)
+
+            key = cv2.waitKey(1)
+
+            if key == 27:
+                break
+        video.release()
+        cv2.destroyAllWindows()

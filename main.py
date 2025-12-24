@@ -53,6 +53,8 @@ To perform hand estimation, press hand_estimation
 To take control of the mouse with your hands, type mouse_hand
           
 To detect text, type text
+          
+To recognizetext, press text_recon
 
 To exit, type break""")
 
@@ -106,6 +108,8 @@ To exit, type break""")
             calculator.mouse_hand_estimation()
         elif action == "text":
             calculator.detect_text()
+        elif action == "text_recon":
+            calculator.recognize_text()
         elif action == "break":
             break
         else:
